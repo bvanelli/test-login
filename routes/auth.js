@@ -22,6 +22,7 @@ router.post('/login', authHelpers.loginRedirect, (req, res, next) => {
     if (!user) { handleResponse(res, 404, 'Wrong password or User not found'); }
     if (user) {
       req.logIn(user, function (err) {
+        console.log(err);
         if (err) { handleResponse(res, 500, 'error'); }
         handleResponse(res, 200, 'success');
       });

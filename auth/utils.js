@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const knex = require('../db/connection');
+const uuidv4 = require('uuid/v4');
 
 function comparePass(userPassword, databasePassword) {
   return bcrypt.compareSync(userPassword, databasePassword);
@@ -9,11 +10,15 @@ function createUser(req, res) {
   return handleErrors(req)
   .then(() => {
     const hash = bcrypt.hashSync(req.body.password, 10);
+    const uuid = uuidv4();
     return knex('users')
     .insert({
+      id_usuario: uuid,
+      id_assinante: uuid,
       username: req.body.username,
-      email: req.body.email,
-      password: hash
+      password: hash,
+      endereco: req.body.endereco,
+      email: req.body.email
     })
     .returning('*');
   })
