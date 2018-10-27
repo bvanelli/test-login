@@ -1,14 +1,15 @@
 const bcrypt = require('bcryptjs');
 const knex = require('../db/connection');
 const uuidv4 = require('uuid/v4');
+const validator = require('validator');
 
 function comparePass(userPassword, databasePassword) {
   return bcrypt.compareSync(userPassword, databasePassword);
 }
 
 function createUser(req, res) {
-  return handleErrors(req)
-  .then(() => {
+  return validateSignup(req)
+  .then((sanitize) => {
     const hash = bcrypt.hashSync(req.body.password, 10);
     const uuid = uuidv4();
     return knex('users')
@@ -18,12 +19,12 @@ function createUser(req, res) {
       username: req.body.username,
       password: hash,
       endereco: req.body.endereco,
-      email: req.body.email
+      email: sanitize.email
     })
     .returning('*');
   })
   .catch((err) => {
-    res.status(400).json({status: err.message});
+    res.status(400).json({status: err.detail});
   });
 }
 
@@ -50,19 +51,26 @@ function loginRedirect(req, res, next) {
   return next();
 }
 
-function handleErrors(req) {
+function validateSignup(req) {
   return new Promise((resolve, reject) => {
-    if (req.body.username.length < 6) {
+    if (!validator.isLength(req.body.username, {min:6, max: 30})) {
       reject({
-        message: 'Username must be longer than 6 characters'
+        detail: 'Username must be longer than 6 characters and less than 30 characters.'
       });
     }
-    else if (req.body.password.length < 6) {
+    else if (!validator.isLength(req.body.password, {min:6, max: 30})) {
       reject({
-        message: 'Password must be longer than 6 characters'
+        detail: 'Password must be longer than 6 characters and less than 30 characters.'
+      });
+    } 
+    else if (!validator.isEmail(req.body.email)) {
+      reject({
+        detail: 'Please insert a valid email.'
       });
     } else {
-      resolve();
+      var sanitize = {};
+      sanitize.email = validator.normalizeEmail(req.body.email);
+      resolve(sanitize);
     }
   });
 }
