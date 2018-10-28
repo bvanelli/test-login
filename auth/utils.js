@@ -33,6 +33,7 @@ function loginRequired(req, res, next) {
   return next();
 }
 
+// TODO: this function is not being used yet
 function adminRequired(req, res, next) {
   if (!req.user) res.status(401).json({status: 'Please log in'});
   return knex('users').where({username: req.user.username}).first()

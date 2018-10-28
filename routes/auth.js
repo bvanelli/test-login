@@ -5,7 +5,19 @@ const router = express.Router();
 const authHelpers = require('../auth/utils');
 const passport = require('../auth/local');
 
-
+/**
+ * @api {get} /auth/signup Register a new user on the database.
+ * @apiName Signup
+ * @apiGroup Login
+ *
+ * @apiParam {String} username Username for the user.
+ * @apiParam {String} password Password for the user.
+ * @apiParam {String} endereco Address for the user.
+ * @apiParam {String} email Email for the user.
+ *
+ * @apiSuccess {String} status Success message.
+ * @apiError {String} status Error message related to query.
+ */
 router.post('/signup', authHelpers.loginRedirect, (req, res, next)  => {
   return authHelpers.createUser(req, res)
   .then((response) => {
@@ -16,6 +28,17 @@ router.post('/signup', authHelpers.loginRedirect, (req, res, next)  => {
   .catch((err) => { handleResponse(res, 500, 'error'); });
 });
 
+/**
+ * @api {get} /auth/login Login with user.
+ * @apiName Login
+ * @apiGroup Login
+ *
+ * @apiParam {String} username Username for the user.
+ * @apiParam {String} password Password for the user.
+ *
+ * @apiSuccess {String} status Success message.
+ * @apiError {String} status Error message related to query.
+ */
 router.post('/login', authHelpers.loginRedirect, (req, res, next) => {
   passport.authenticate('local', (err, user, info) => {
     if (err) { handleResponse(res, 500, 'error'); }
@@ -30,6 +53,14 @@ router.post('/login', authHelpers.loginRedirect, (req, res, next) => {
   })(req, res, next);
 });
 
+/**
+ * @api {get} /auth/logout Logs out the user session.
+ * @apiName Logout
+ * @apiGroup Login
+ *
+ * @apiSuccess {String} status Success message.
+ * @apiError {String} status In case user is not logged in.
+ */
 router.get('/logout', authHelpers.loginRequired, (req, res, next) => {
   req.logout();
   handleResponse(res, 200, 'success');
