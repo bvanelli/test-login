@@ -5,10 +5,12 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var passport = require('passport');
+var KnexSessionStore = require('connect-session-knex')(session);
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var authRouter  = require('./routes/auth');
+var knex = require('./db/connection');
 
 var app = express();
 
@@ -23,10 +25,17 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // use express sessions for cookies
+
+const store = new KnexSessionStore({
+  knex: knex,
+  tablename: 'sessions' // optional. Defaults to 'sessions'
+});
+
 app.use(session({
   secret: 'SOME ENV SECRET',
   resave: false,
   saveUninitialized: false,
+  store: store,
   //cookie: { secure: true } // TODO: uncomment if https
 }))
 
